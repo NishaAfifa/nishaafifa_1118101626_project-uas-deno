@@ -1,5 +1,5 @@
 import {renderFileToString} from 'https://deno.land/x/dejs/mod.ts';
-import {select, select1} from '../models/pg_model.ts';
+import {select} from '../models/pg_model.ts';
 import TSql from '../models/sql.ts';
 
 const home = async({response}:{response : any}) => {
@@ -20,14 +20,16 @@ const home = async({response}:{response : any}) => {
 }
 
 const product = async({response}:{response : any}) => {
+    const dataTable = await select(
+        [
+            {text : TSql["OpsiFindAll"]},
+            {text : TSql["BarangFindAll"]}
+        ]
+    )
     const html = await renderFileToString("./views/home.ejs", {
         data : {
-            opsi : await select({
-                text : TSql["OpsiFindAll"]
-            }),
-            barang : await select1({
-                text : TSql["BarangFindAll"]
-            })
+            opsi : dataTable[0],
+            barang : dataTable[1]
         },
         subview : {
             file : "./views/headline.ejs"

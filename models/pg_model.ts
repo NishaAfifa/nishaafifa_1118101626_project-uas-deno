@@ -9,18 +9,20 @@ const client = new Client({
     database : "project"
 });
 
-export async function select(qry : QueryConfig){
+export async function select(qry : QueryConfig | QueryConfig[]){
     await client.connect();
-    let hasil : QueryResult = await client.query(qry);
+    let tables : any = [];
+    let hasil : QueryResult | QueryResult[];
+    if(Array.isArray(qry)){
+        hasil = await client.multiQuery(qry);
+        hasil.forEach((obj)=>{
+            tables.push(obj.rowsOfObjects());
+        });
+    }
+    else{
+        hasil = await client.query(qry);
+        tables = hasil.rowsOfObjects();
+    }
     await client.end();
-
-    return hasil.rowsOfObjects();
-}
-
-export async function select1(qry : QueryConfig){
-    await client.connect();
-    let hasil : QueryResult = await client.query(qry);
-    await client.end();
-
-    return hasil.rowsOfObjects();
+    return tables;
 }
